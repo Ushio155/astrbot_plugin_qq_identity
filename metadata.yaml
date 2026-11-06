@@ -14,7 +14,7 @@ desc: |-
   - **只读预演**：填一个 QQ 就能看到模型这一轮实际读到的身份块。
 
   WebUI 页面：开关、开发者名单、昵称打码、三套模板、熟人登记、熟人候选、隔离设置、预演，全在一页。
-version: 0.8.5
+version: 1.0.0
 author: Ushio155
 repo: https://github.com/Ushio155/astrbot_plugin_qq_identity
 astrbot_version: ">=4.26.0"

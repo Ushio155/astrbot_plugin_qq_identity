@@ -24,7 +24,7 @@ root: .
   - `clickthrough_people_ui.py`：熟人登记 + 候选卡片回归，**39 条**。
   - `verify_tpl_tabs_live.py`：登录 127.0.0.1:6185 → 重载插件 → 校验线上资源与 `identity/state`，**65 条**。
   - `probe_oss_shots.py` + `fetch_oss_state.py`：渲染 `docs/` 里那两张图（用线上 `tpl_defaults`，所以图里是内置默认文案）。
-- **版本号有三处联动**：`metadata.yaml` 的 `version`、`README.md` 的「更新记录」、以及本机备份库 `Ushio155/astrbot-backup`。只改一处会导致「线上是 0.8.5、文档还写着 0.8.4」。
+- **版本号三处联动**：`metadata.yaml` 的 `version`、git tag、本机备份库 `Ushio155/astrbot-backup`。README **不写更新记录**（首次公开发布起就不留 changelog，历史看 `git log` 与 tag）。
 - **发布通道**：插件市场已迁到 `https://cloud.astrbot.app/publish`（旧的 `AstrBot_Plugins_Collection` 仓库标了 DEPRECATED）。发布要 AstrBot Cloud 账号，压缩包上限 16MB。
 
 ## 3. 测试与运行指令
@@ -46,3 +46,4 @@ root: .
 3. **不要把 `.git`、`__pycache__`、`data/`、`audit.log` 提交进来**：`.gitignore` 已列，但用 `git add -A -f` 会无视它 —— 提交前逐条看 `git status --porcelain`。
 4. **`metadata.yaml` 里 `repo` 必须指回本仓库**，否则市场页的「源码」按钮会失效。
 5. **发版前跑一次 `verify_tpl_tabs_live.py`**：它同时校验版本号与三档模板未被误改（0.8.4 那次就是它挡住的）。
+6. **README 只写给使用者看**：不写更新记录 / 开发日志，不提作者自己的其他插件（世界书、口令验证那类分工是私人环境），也不留「0.x 起改了什么」的版本注记。这些放 `git log` 与提交信息里。
