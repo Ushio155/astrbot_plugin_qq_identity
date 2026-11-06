@@ -1,0 +1,697 @@
+/* ============================================================================
+   身份识别与按人隔离 · 插件页样式
+
+   配色跟 AstrBot WebUI 原生页面一致（对齐 dashboard/src/theme/LightTheme.ts /
+   DarkTheme.ts 与 dashboard/src/styles/dashboard-shell.css）：
+     页面底色 = v-theme-background (#1a1a1a)   卡片 = v-theme-surface (#242424)
+     边框 = on-surface 的 11%                    主色 = #5ba4d4
+   AstrBot 会把 <html data-theme="dark|light"> 注入进来，这里只认它。
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f6f8fa;
+  --border: rgba(27, 28, 29, 0.11);
+  --border-strong: rgba(27, 28, 29, 0.16);
+  --field-bg: #f8fafc;
+  --text: #1b1c1d;
+  --muted: rgba(27, 28, 29, 0.68);
+  --subtle: rgba(27, 28, 29, 0.5);
+  --primary: #3c96ca;
+  --primary-soft: rgba(60, 150, 202, 0.14);
+  --primary-line: rgba(60, 150, 202, 0.46);
+  --danger: #dc2626;
+  --warning: #b45309;
+  --ghost: rgba(27, 28, 29, 0.04);
+  --ghost-hover: rgba(27, 28, 29, 0.07);
+  --radius-lg: 16px;
+  --radius: 12px;
+  --radius-sm: 9px;
+  --shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+  --ctl-h: 38px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a1a1a;
+  --surface: #242424;
+  --surface-2: #2b2b2b;
+  --border: rgba(232, 234, 237, 0.11);
+  --border-strong: rgba(232, 234, 237, 0.18);
+  --field-bg: rgba(232, 234, 237, 0.05);
+  --text: #e8eaed;
+  --muted: rgba(232, 234, 237, 0.66);
+  --subtle: rgba(232, 234, 237, 0.46);
+  --primary: #5ba4d4;
+  --primary-soft: rgba(91, 164, 212, 0.20);
+  --primary-line: rgba(91, 164, 212, 0.52);
+  --danger: #ff6b6b;
+  --warning: #ffc857;
+  --ghost: rgba(232, 234, 237, 0.05);
+  --ghost-hover: rgba(232, 234, 237, 0.09);
+  --shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.6 -apple-system, "SF Pro Display", "Segoe UI", "PingFang SC",
+    "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text) 18%, transparent);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 28%, transparent);
+  background-clip: content-box;
+}
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 24px 24px 64px; }
+
+/* -------------------------------------------------------------------- 页头 */
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+.head > div:first-child { min-width: 0; flex: 1; }
+.head h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 840px; }
+.head .btn { flex: 0 0 auto; }
+
+/* -------------------------------------------------------------------- 卡片 */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.card h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+/* -------------------------------------------------------------------- 控件 */
+
+.field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.field > .lbl {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+  min-height: 18px;
+}
+.field > .fhint, .fhint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--subtle);
+  margin: -1px 0 0;
+}
+.hint { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.65; }
+
+.grid { display: grid; gap: 14px 16px; align-items: start; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.field.narrow { max-width: 340px; }
+
+.input {
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--field-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input.input, select.input { height: var(--ctl-h); line-height: normal; }
+select.input { padding-right: 8px; cursor: pointer; }
+.input::placeholder { color: var(--subtle); }
+.input:hover { border-color: color-mix(in srgb, var(--text) 26%, transparent); }
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.row > .input { flex: 1 1 220px; width: auto; }
+.row > .btn { height: var(--ctl-h); }
+
+code {
+  background: var(--ghost);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-size: 12.5px;
+}
+
+/* -------------------------------------------------------------------- 按钮 */
+
+.btn {
+  border: 1px solid var(--border-strong);
+  background: var(--ghost);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  height: 34px;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+.btn:hover { background: var(--ghost-hover); }
+.btn.sm { height: 30px; padding: 0 11px; font-size: 13px; }
+/* 主按钮用 Vuetify 的 tonal 观感：淡主色底 + 主色字（原生页面就这么画的） */
+.btn.primary {
+  background: var(--primary-soft);
+  border-color: var(--primary-line);
+  color: color-mix(in srgb, var(--primary) 74%, var(--text));
+  font-weight: 600;
+}
+.btn.primary:hover {
+  background: color-mix(in srgb, var(--primary) 26%, transparent);
+  border-color: var(--primary);
+}
+.btn.ghost { background: transparent; }
+.btn.ghost:hover { background: var(--ghost-hover); }
+
+/* 复选 / 开关：CSS 版 v-switch，跟原生页面一致 */
+.check, .switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+  min-height: 22px;
+}
+.check input[type="checkbox"], .switch input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 20px;
+  margin: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 16%, transparent);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.16s ease;
+}
+.check input[type="checkbox"]::after, .switch input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.16s ease;
+}
+.check input[type="checkbox"]:checked, .switch input[type="checkbox"]:checked {
+  background: var(--primary);
+}
+.check input[type="checkbox"]:checked::after, .switch input[type="checkbox"]:checked::after {
+  transform: translateX(14px);
+}
+.check:hover input[type="checkbox"], .switch:hover input[type="checkbox"] {
+  background: color-mix(in srgb, var(--text) 24%, transparent);
+}
+.check:hover input[type="checkbox"]:checked, .switch:hover input[type="checkbox"]:checked {
+  background: color-mix(in srgb, var(--primary) 86%, var(--text));
+}
+.check input[type="checkbox"]:focus-visible, .switch input[type="checkbox"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* 勾选项成组出现时，排成一行、等间距 */
+.check-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+  padding: 2px 0;
+}
+
+/* -------------------------------------------------------------------- 名单 */
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px; align-items: center; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 12px;
+  border: 1px solid var(--primary-line);
+  background: var(--primary-soft);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 22px;
+}
+.chip button {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 5px;
+  border-radius: 999px;
+}
+.chip button:hover { color: var(--danger); }
+
+/* -------------------------------------------------------------------- 输出 */
+
+.meta-line { color: var(--muted); font-size: 12.5px; }
+.out {
+  margin: 0;
+  background: var(--field-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 64px;
+}
+/* 还没生成预览时的空状态提示：只写在框里，不算内容，生成后自动消失 */
+.out:empty::before {
+  content: "填好上面的 QQ 号，点「生成预览」，这里会显示模型这一轮实际读到的身份块。";
+  color: var(--muted);
+  font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 12.5px;
+}
+
+/* ------------------------------------------------------------------ 提示条 */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 18px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  max-width: 80vw;
+  z-index: 20;
+}
+.toast.error { background: var(--danger); color: #fff; }
+.hidden { display: none !important; }
+
+@media (max-width: 860px) {
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 16px 14px 48px; }
+  .head { flex-direction: column; align-items: flex-start; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .field.narrow { max-width: none; }
+}
+
+/* --------------------------------------------------- 模板编辑 / 昵称打码（0.3.0） */
+
+/* textarea.tpl-box 的尺寸/字体统一在下面 .tpl-editor 那一段里定义（0.8.4） */
+
+/* ------------------------------------------- 身份块模板：分档切换（0.8.3）
+
+   档位控件在标题下方靠左；控件里那块滑动高亮由 app.js 用 transform/width
+   驱动（见 syncThumb），所以这里只负责画它，不参与定位计算。
+   注意 .seg 用 inset 阴影当描边而不是真 border —— 绝对定位子元素的包含块是
+   padding box，真 border 会让 getBoundingClientRect 与实际落点差 1px。      */
+
+.tpl-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.seg {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  isolation: isolate;
+}
+.seg-thumb {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 0;
+  height: calc(100% - 6px);
+  border-radius: 999px;
+  background: var(--primary-soft);
+  box-shadow: inset 0 0 0 1px var(--primary-line);
+  transform: translateX(0);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, width;
+  pointer-events: none;
+  z-index: 0;
+}
+.seg-item {
+  position: relative;
+  z-index: 1;
+  height: 30px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.seg-item:hover { color: var(--text); }
+.seg-item.is-active {
+  color: color-mix(in srgb, var(--primary) 78%, var(--text));
+  font-weight: 600;
+}
+.seg-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+/* ---------------------------------------------------------- 可折叠的说明（0.8.4）
+
+   收起/展开用 grid-template-rows: 0fr → 1fr 过渡（比 max-height 猜高度平滑，
+   也不需要 JS 量 scrollHeight）。 */
+
+.tpl-help-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 28px;
+  padding: 0 11px 0 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+.tpl-help-toggle:hover {
+  color: var(--text);
+  background: var(--ghost);
+  border-color: var(--border);
+}
+.tpl-help-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+.tpl-help-toggle .chev {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg) translate(-1px, -1px);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tpl-help-toggle[aria-expanded="true"] .chev {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.tpl-help {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tpl-help[data-open="true"] { grid-template-rows: 1fr; }
+.tpl-help-body {
+  overflow: hidden;
+  min-height: 0;
+}
+.tpl-help-inner {
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+.tpl-help[data-open="true"] .tpl-help-inner {
+  opacity: 1;
+  transform: none;
+}
+.tpl-help-inner .hint { padding-top: 2px; }
+
+.tpl-panels { display: block; }
+.tpl-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+/* 作者样式里的 display:flex 会盖掉 UA 的 [hidden]{display:none}，必须显式写一条 */
+.tpl-panel[hidden] { display: none; }
+.tpl-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tpl-len {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--subtle);
+  white-space: nowrap;
+}
+
+/* 编辑区：外层画边框/底色，里面是「透明底 textarea + 背后一层变量高亮」 */
+.tpl-editor {
+  position: relative;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--field-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tpl-editor:hover { border-color: color-mix(in srgb, var(--text) 26%, transparent); }
+.tpl-editor:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.tpl-editor textarea.tpl-box,
+.tpl-mirror {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 11px 13px;
+  border: 0;
+  font-family: ui-monospace, "Cascadia Code", Consolas, "Microsoft YaHei", monospace;
+  font-size: 12.5px;
+  line-height: 1.66;
+  letter-spacing: normal;
+  tab-size: 4;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  /* 两边都预留滚动条位置，否则有滚动条时换行位置会差一列、高亮块会错位 */
+  scrollbar-gutter: stable;
+}
+.tpl-editor textarea.tpl-box {
+  position: relative;
+  z-index: 1;
+  /* 一档独占整块宽度：卡片里只显示当前那一档，所以直接给足高度 */
+  height: clamp(300px, 46vh, 640px);
+  min-height: 240px;
+  background: transparent;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+}
+.tpl-mirror {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+/* 只有背景色，没有文字：上面的 textarea 自己画字，所以不会出重影 */
+.tpl-var {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 46%, transparent);
+}
+.tpl-var.bad {
+  background: color-mix(in srgb, var(--warning) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warning) 55%, transparent);
+}
+
+.tpl-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+@keyframes tpl-panel-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.tpl-panel:not([hidden]) { animation: tpl-panel-in 0.22s ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .seg-thumb { transition: none; }
+  .tpl-help,
+  .tpl-help-toggle .chev,
+  .tpl-help-inner { transition: none; }
+  .tpl-panel:not([hidden]) { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .tpl-bar { justify-content: flex-start; }
+  .seg { flex: 1 1 auto; }
+  .seg-item { flex: 1 1 0; padding: 0 8px; }
+  .tpl-editor textarea.tpl-box { height: clamp(260px, 52vh, 560px); }
+}
+.badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--subtle);
+  vertical-align: 1px;
+}
+.badge.custom { color: var(--primary); border-color: var(--primary-line); }
+.fhint.warn { color: var(--warning); }
+.fhint.warn:empty { display: none; }
+
+/* ------------------------------------------------------- 熟人登记（0.4.0） */
+
+.people { display: flex; flex-direction: column; gap: 8px; }
+.person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: 8px 11px;
+  font-size: 13px;
+}
+.person .qq { font-family: ui-monospace, Consolas, monospace; color: var(--muted); }
+.person .alias { font-weight: 600; }
+.person .meta { color: var(--subtle); font-size: 12px; }
+.person .grow { flex: 1 1 auto; }
+.person .btn { height: 28px; padding: 0 10px; font-size: 12px; }
+.person .btn.danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.btn.danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+.person.editing { border-color: var(--primary-line); background: var(--primary-soft); }
+
+.mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); }
+
+/* --------------------------------------------------- 熟人登记表单（0.7.0） */
+
+.people-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: 13px 14px;
+  margin-bottom: 12px;
+}
+.people-form .input { background: var(--surface); }
+.people-form .input[readonly] { color: var(--muted); cursor: not-allowed; }
+.people-form .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.people-form .actions .btn { height: 30px; }
+.people-form .actions .fhint { margin-left: auto; text-align: right; }
+/* 编辑态给整块描个边，避免「点了编辑但看不出在编辑哪条」 */
+.people-form.editing { border-color: var(--primary-line); box-shadow: inset 0 0 0 1px var(--primary-soft); }
+
+@media (max-width: 640px) {
+  .people-form { grid-template-columns: 1fr; }
+}
+
+/* --------------------------------------------------- 熟人候选（0.8.0） */
+
+/* 虚线边框 = "还没定性的名单"，避免和上面实线的登记表混为一谈 */
+.candidates .person { border-style: dashed; }
+.candidates .person .name { color: var(--muted); }
+.candidates .person .btn.promote {
+  color: var(--primary);
+  border-color: var(--primary-line);
+  background: var(--primary-soft);
+}
+.cand-tag {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--subtle);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}

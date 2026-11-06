@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>身份识别</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="head">
+        <div>
+          <h1>身份识别与按人隔离</h1>
+          <p class="sub">决定模型每轮看到的“当前发言人是谁、有什么权限”，以及群聊是否按人拆分会话。</p>
+        </div>
+        <button id="btn-save" class="btn primary">保存</button>
+      </header>
+
+      <section class="card">
+        <h2>开关</h2>
+        <div class="check-row">
+          <label class="check"><input type="checkbox" id="c-enable" /> 启用插件</label>
+          <label class="check"><input type="checkbox" id="c-inject" /> 每轮注入身份块</label>
+          <label class="check"><input type="checkbox" id="c-log" /> 打印隔离日志</label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>开发者认定</h2>
+        <p class="hint">
+          模型判断身份<strong>只看 QQ 号</strong>：这里列出的号一律按开发者对待，不需要任何暗号。留空则回退到 AstrBot 的全局管理员
+          <code>admins_id</code>。
+        </p>
+        <div class="field">
+          <span class="lbl">开发者 QQ 名单</span>
+          <div id="master-chips" class="chips"></div>
+          <div class="row">
+            <input id="master-input" class="input" placeholder="输入 QQ 号后回车或点添加" />
+            <button id="btn-add-master" class="btn sm">添加</button>
+            <button id="btn-use-admins" class="btn ghost sm">用管理员列表填入</button>
+          </div>
+          <p id="admins-hint" class="fhint"></p>
+        </div>
+        <div class="grid grid-2" data-grid="开发者认定">
+          <label class="field">
+            <span class="lbl">开发者的称呼</span>
+            <input id="master-label" class="input" placeholder="开发者" />
+            <span class="fhint">注入身份块时怎么称呼对方</span>
+          </label>
+          <label class="field">
+            <span class="lbl">注入位置</span>
+            <select id="inject-target" class="input">
+              <option value="system">系统提示词尾部（最强）</option>
+              <option value="user">用户消息临时块</option>
+              <option value="both">两处都写</option>
+            </select>
+            <span class="fhint">身份块插进哪一段上下文</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>按人隔离群聊</h2>
+        <p class="hint">
+          把群聊会话按「发送者_群号」拆开，避免一群多人共用一个上下文。注意：重启 AstrBot 后才对白名单生效。
+        </p>
+        <label class="field narrow">
+          <span class="lbl">隔离方式</span>
+          <select id="isolate-mode" class="input">
+            <option value="all">all：生效群内所有人各用一份上下文</option>
+            <option value="listed">listed：只隔离下面这些人</option>
+            <option value="off">off：关闭</option>
+          </select>
+        </label>
+        <div class="grid grid-2" data-grid="隔离范围">
+          <label class="field">
+            <span class="lbl">生效群号</span>
+            <input id="isolate-groups" class="input" placeholder="逗号分隔" />
+            <span class="fhint">留空 = 所有群</span>
+          </label>
+          <label class="field">
+            <span class="lbl">隔离名单</span>
+            <input id="isolate-qq" class="input" placeholder="逗号分隔" />
+            <span class="fhint">mode = listed 时生效</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>昵称打码</h2>
+        <p class="hint">
+          非开发者的昵称/群名片里出现这些词时，<strong>直接在数据层替换</strong>。改的是事件对象本身，所以内置
+          identifier、群聊上下文存进历史的名字也会一起干净——比在提示词里劝模型「别信昵称」可靠。
+        </p>
+        <div class="check-row">
+          <label class="check"><input type="checkbox" id="c-mask" /> 启用昵称打码</label>
+        </div>
+        <div class="grid grid-2" data-grid="打码设置">
+          <label class="field">
+            <span class="lbl">要打码的词</span>
+            <input id="mask-words" class="input" placeholder="开发者，老板" />
+            <span class="fhint">逗号分隔；对开发者的称呼会自动加进来</span>
+          </label>
+          <label class="field">
+            <span class="lbl">替换符号</span>
+            <input id="mask-char" class="input" placeholder="＊" maxlength="4" />
+            <span class="fhint">每个命中的词换成一个它（最多 4 字符）</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" id="card-tpl">
+        <h2>身份块模板</h2>
+        <div class="tpl-bar">
+          <div id="tpl-tabs" class="seg" role="tablist" aria-label="身份块模板档位">
+            <span class="seg-thumb" aria-hidden="true"></span>
+            <button
+              type="button"
+              role="tab"
+              class="seg-item is-active"
+              data-tier="owner"
+              id="tab-owner"
+              aria-selected="true"
+              aria-controls="panel-owner"
+            >
+              开发者
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="seg-item"
+              data-tier="known"
+              id="tab-known"
+              aria-selected="false"
+              aria-controls="panel-known"
+              tabindex="-1"
+            >
+              熟人
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="seg-item"
+              data-tier="stranger"
+              id="tab-stranger"
+              aria-selected="false"
+              aria-controls="panel-stranger"
+              tabindex="-1"
+            >
+              陌生人
+            </button>
+          </div>
+          <button
+            id="btn-tpl-help"
+            class="tpl-help-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="tpl-help-body"
+          >
+            <span class="chev" aria-hidden="true"></span>
+            <span>说明与可用变量</span>
+          </button>
+        </div>
+        <div class="tpl-help" id="tpl-help" data-open="false">
+          <div class="tpl-help-body" id="tpl-help-body">
+            <div class="tpl-help-inner">
+              <p class="hint">
+                模型每轮读到的身份说明就是下面三段，<strong>可以自己改</strong>；留空 = 用内置默认文案（点「恢复默认」即清空当前这一档）。
+                可用变量：<code>{name}</code> 昵称 <code>{qq}</code> QQ 号 <code>{group}</code> 群号行
+                <code>{label}</code> 对开发者的称呼 <code>{address}</code> 称呼补充句 <code>{masters}</code> 开发者名单
+                <code>{tier}</code> 档位；熟人段另有 <code>{aliases}</code> <code>{relation}</code> <code>{note}</code>
+                <code>{profile}</code>（登记内容整句）。写错变量会在保存时被拒绝。
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="tpl-panels">
+          <div class="tpl-panel" id="panel-owner" role="tabpanel" aria-labelledby="tab-owner" data-tier="owner">
+            <div class="tpl-panel-head">
+              <span class="lbl">发言人是开发者时 <span id="tpl-owner-badge" class="badge"></span></span>
+              <span id="tpl-owner-len" class="tpl-len"></span>
+            </div>
+            <div class="tpl-editor">
+              <div class="tpl-mirror" id="tpl-owner-mirror" aria-hidden="true"></div>
+              <textarea id="tpl-owner" class="input tpl-box" spellcheck="false" aria-label="开发者身份块模板"></textarea>
+            </div>
+            <span id="tpl-owner-warn" class="fhint warn"></span>
+          </div>
+          <div class="tpl-panel" id="panel-known" role="tabpanel" aria-labelledby="tab-known" data-tier="known" hidden>
+            <div class="tpl-panel-head">
+              <span class="lbl">发言人是熟人时 <span id="tpl-known-badge" class="badge"></span></span>
+              <span id="tpl-known-len" class="tpl-len"></span>
+            </div>
+            <div class="tpl-editor">
+              <div class="tpl-mirror" id="tpl-known-mirror" aria-hidden="true"></div>
+              <textarea id="tpl-known" class="input tpl-box" spellcheck="false" aria-label="熟人身份块模板"></textarea>
+            </div>
+            <span id="tpl-known-warn" class="fhint warn"></span>
+          </div>
+          <div class="tpl-panel" id="panel-stranger" role="tabpanel" aria-labelledby="tab-stranger" data-tier="stranger" hidden>
+            <div class="tpl-panel-head">
+              <span class="lbl">发言人是陌生人时 <span id="tpl-stranger-badge" class="badge"></span></span>
+              <span id="tpl-stranger-len" class="tpl-len"></span>
+            </div>
+            <div class="tpl-editor">
+              <div class="tpl-mirror" id="tpl-stranger-mirror" aria-hidden="true"></div>
+              <textarea id="tpl-stranger" class="input tpl-box" spellcheck="false" aria-label="陌生人身份块模板"></textarea>
+            </div>
+            <span id="tpl-stranger-warn" class="fhint warn"></span>
+          </div>
+        </div>
+        <div class="tpl-foot">
+          <button id="btn-reset-tpl" class="btn ghost sm" type="button" title="只把当前这一档恢复成内置默认（其它两档不动）">
+            恢复默认
+          </button>
+          <span id="tpl-reset-hint" class="fhint"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>熟人登记 <span id="people-count" class="badge"></span></h2>
+        <p class="hint">
+          登记过的人按「认识的人」对待：<strong>放开</strong>长篇/角色扮演/训练测试，<strong>但保留</strong>「不透露开发者的私人信息」。
+          档位由数据推导——<strong>开发者只认配置里的名单</strong>，登记表里永远写不出一个开发者，所以聊天里没人能把自己变成开发者。
+          <br />两种改法都行：下面直接填表登记（每行还能编辑 / 移除），或在聊天里由开发者发
+          <code>/know QQ 称呼 [关系] [备注]</code>；任何人可用 <code>/我是谁</code> 查自己。
+        </p>
+        <div id="people-form" class="people-form">
+          <label class="field">
+            <span class="lbl">QQ 号</span>
+            <input id="np-qq" class="input" placeholder="5-12 位数字" inputmode="numeric" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span class="lbl">称呼</span>
+            <input id="np-aliases" class="input" placeholder="小七｜阿七（多个用 | 、 ， 分隔）" autocomplete="off" />
+            <span class="fhint">必填；每个别名最多 20 字</span>
+          </label>
+          <label class="field">
+            <span class="lbl">关系</span>
+            <input id="np-relation" class="input" placeholder="同事 / 同学 / 网友" autocomplete="off" />
+          </label>
+          <label class="field">
+            <span class="lbl">备注</span>
+            <input id="np-note" class="input" placeholder="怎么认识的、在意什么" autocomplete="off" />
+          </label>
+          <div class="actions">
+            <button id="btn-person-save" class="btn primary sm" type="button">登记</button>
+            <button id="btn-person-cancel" class="btn ghost sm hidden" type="button">取消编辑</button>
+            <span id="np-mode" class="fhint"></span>
+          </div>
+        </div>
+        <div id="people-list" class="people"></div>
+        <p id="people-path" class="fhint"></p>
+        <p id="people-audit" class="fhint"></p>
+        <div class="check-row">
+          <label class="check">
+            <input type="checkbox" id="c-owner-tools" /> 允许开发者在聊天里让模型直接登记 / 移除
+          </label>
+        </div>
+        <p class="hint">
+          只在<strong>开发者自己发言</strong>时，把工具 <span id="owner-tools-list" class="mono"></span> 挂进这一轮请求；
+          非开发者的请求里根本不存在这些工具名（不是"看得见但被拒"）。工具内部还会再验一次身份，而且
+          <strong>永远无法把某人写成开发者</strong>——开发者只来自上面的配置名单。每次改动都记一行审计。
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>熟人候选 <span id="cand-count" class="badge"></span></h2>
+        <p class="hint">
+          自动记下「给机器人发过消息、但既不是开发者、也没登记」的 QQ。<strong>这只是观察名单</strong>：
+          它不参与身份判定，也不给任何权限——候选里的人仍然是<strong>陌生人</strong>，照样走全套防备条款。
+          <br />觉得谁该放宽就点「转为熟人」；不想留痕点「忽略」。每人记昵称、最近出现的群、首次/最近露面、次数，最多
+          <span id="cand-max" class="mono"></span> 个。
+        </p>
+        <div class="check-row">
+          <label class="check">
+            <input type="checkbox" id="c-candidates" /> 自动记录熟人候选（关掉后一条都不记，也不建文件）
+          </label>
+        </div>
+        <div class="row">
+          <button id="btn-cand-clear" class="btn ghost sm" type="button">清空候选表</button>
+          <span id="cand-path" class="fhint"></span>
+        </div>
+        <div id="cand-list" class="people candidates"></div>
+      </section>
+
+      <section class="card">
+        <h2>预演</h2>
+        <p class="hint">
+          填一个 QQ 号（必填）和群号（可选），看模型这一轮实际会读到什么。只是预览：不发消息、不写文件、不改任何配置。
+        </p>
+        <div class="grid grid-3" data-grid="预演参数">
+          <label class="field">
+            <span class="lbl">QQ 号</span>
+            <input id="p-sender" class="input" placeholder="例如 123456789" inputmode="numeric" />
+          </label>
+          <label class="field">
+            <span class="lbl">昵称</span>
+            <input id="p-name" class="input" placeholder="例如 阿岚" />
+            <span class="fhint">可空；只影响「称呼」</span>
+          </label>
+          <label class="field">
+            <span class="lbl">群号</span>
+            <input id="p-group" class="input" placeholder="例如 987654321" inputmode="numeric" />
+            <span class="fhint">可空；填了才判群聊</span>
+          </label>
+        </div>
+        <div class="row">
+          <button id="btn-preview" class="btn sm">生成预览</button>
+        </div>
+        <div id="p-meta" class="meta-line"></div>
+        <pre id="p-out" class="out"></pre>
+      </section>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

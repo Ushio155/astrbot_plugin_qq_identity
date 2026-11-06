@@ -1,0 +1,22 @@
+# 依赖 / 缓存
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+node_modules/
+
+# 运行时数据（插件跑起来会写到 data/plugin_data/，不在仓库里）
+data/
+*.log
+people.json
+candidates.json
+audit.log
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 代码索引缓存
+.dsh-code-index/
